@@ -12,26 +12,27 @@
   <script src="../assets/lib/vue-2.6.12.min.js"></script>
   <script src="../assets/lib/element-ui-2.14.0.min.js"></script>
   <style>
-    body,
-    html {
+    * {
       padding: 0;
       margin: 0;
+      box-sizing: border-box;
     }
-
-    header {
+    body,
+    html {
       width: 100%;
-      line-height: 80px;
-      text-align: center;
-      background: #409EFF;
-      color: #ffffff;
-      font-size: 20px;
-      box-shadow: 0px 2px 6px #888888;
+      height: 100%;
     }
 
+    #app {
+      padding: 25px;
+      height: 100%;
+    }
+  
     section {
-      width: 90%;
+      width: 100%;
+      height: 100%;
       max-width: 1200px;
-      margin: 10px auto;
+      margin: 0px auto;
       border-radius: 10px;
       box-shadow: 0px 2px 8px 0px rgb(173 180 190 / 24%);
       transition: box-shadow 0.3s ease-out;
@@ -47,13 +48,12 @@
 
 <body>
   <div id="app">
-    <!-- <header>智能点读笔</header> -->
     <section>
       <div class="upload-box">
-        <el-button style="margin-bottom: 15px;" :disabled="fileList.length === 0" type="primary" @click="open">开始合成PDF
+        <el-button style="margin-bottom: 15px;" :disabled="fileList.length === 0" type="primary" @click="submitUpload">开始合成PDF
         </el-button>
-        <el-upload drag action="https://jsonplaceholder.typicode.com/posts/" multiple accept="application/pdf"
-          :auto-upload="false" :file-list="fileList" :before-remove="beforeRemove" :on-change="handleChange">
+        <el-upload drag action="/" multiple accept="application/pdf"
+          :auto-upload="false" :file-list="fileList" :before-remove="beforeRemove" :on-remove="handleChange" :on-change="handleChange">
           <i class="el-icon-upload"></i>
           <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
           <div class="el-upload__tip" slot="tip">只能上传PDF文件，文件不宜过多过大</div>
@@ -63,10 +63,9 @@
 
   </div>
   <script>
-    const electron = require('electron');
+    const { ipcRenderer } = require('electron');
     const fs = require('fs');
     const PDFMerger = require('pdf-merger-js/browser');
-    const merger = new PDFMerger();
     new Vue({
       el: '#app',
       data: function () {
@@ -74,31 +73,27 @@
           fileList: []
         }
       },
-      created: function () {
-        console.log('HelloWorld')
+      mounted() {
+        ipcRenderer.on('download-message', (event, arg) => {
+          if (arg === 'completed') {
+            this.$message.success('文件下载成功！');
+          } else {
+            this.$message.success('文件下载失败！');
+          }
+        });
+      },
+      beforeDestroy() {
+        ipcRenderer.removeListener('download-message')
       },
       methods: {
         handleChange(file, fileList) {
-          this.fileList = fileList.slice(-3);
+          this.fileList = fileList;
         },
         beforeRemove(file, fileList) {
           return this.$confirm(`确定移除 ${file.name}？`);
         },
-        open() {
-          this.$prompt('是否需要修改合成后的文件名', '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            inputValue: '合成文件' + Date.now(),
-          }).then(({ value }) => {
-            this.submitUpload(value);
-          }).catch(() => {
-            this.$message({
-              type: 'info',
-              message: '取消输入'
-            });
-          });
-        },
         async submitUpload(filename) {
+          const merger = new PDFMerger();
           const loading = this.$loading({
             lock: true,
             text: '合成中',
@@ -108,26 +103,23 @@
           await Promise.all(this.fileList.map(async (file) => await merger.add(file.raw)));
           try {
             const mergedPdf = await merger.saveAsBlob();
-            const reader = new FileReader()
-            reader.onload = () => {
-              const buffer = new Buffer(reader.result)
-              fs.writeFile(filename + '.pdf', buffer, {}, (err, res) => {
-                if (err) {
-                  loading.close();
-                  this.$message.error('合成出错：' + JSON.stringify(err));
-                  return
-                }
-                loading.close();
-                this.$alert(`文件 ${filename}.pdf 合成成功`, '成功', {
-                  confirmButtonText: '确定'
-                });
-              })
-            }
-            reader.readAsArrayBuffer(mergedPdf);
+            const url = URL.createObjectURL(mergedPdf);
+            loading.close();
+            this.download(url, '下载.pdf');
           } catch (err) {
             loading.close();
-            this.$message.error('合成出错：' + JSON.stringify(err));
+            const message = '合成出错：' + JSON.stringify(err);
+            console.error(message);
+            this.$message.error(message);
           }
+        },
+        download(url, filename) {
+          const a = document.createElement("a");
+          a.download = filename
+          a.href = url;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
         }
       }
     })

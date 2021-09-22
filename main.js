@@ -20,6 +20,12 @@ function createWindow() {
     win.show();
     Update.check();
   });
+
+  win.webContents.session.on('will-download', (event, item, webContents) => {
+    item.once('done', (event, state) => {
+      win.webContents.send('download-message', state);
+    })
+  })
   // 加载index.html文件
   win.loadFile("renderer/index.html");
   global.Win = win;
