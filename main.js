@@ -12,7 +12,7 @@ function createWindow() {
       contextIsolation: false
     },
     show: false,
-    icon: './build/icons/win32.ico',
+    icon: './build/icons/icon.ico',
     backgroundColor: "#f5f7fa",
   });
   // win.maximize()

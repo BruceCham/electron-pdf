@@ -33,9 +33,9 @@
       "oneClick": false,
       "allowElevation": true,
       "allowToChangeInstallationDirectory": true,
-      "installerIcon": "build/icons/win32.ico",
-      "uninstallerIcon": "build/icons/win32.ico",
-      "installerHeaderIcon": "build/icons/win32.ico",
+      "installerIcon": "build/icons/icon.ico",
+      "uninstallerIcon": "build/icons/icon.ico",
+      "installerHeaderIcon": "build/icons/icon.ico",
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": ""
@@ -47,7 +47,7 @@
       "icon": "build/icons/icon.icns"
     },
     "win": {
-      "icon": "build/icons/win32.ico",
+      "icon": "build/icons/icon.ico",
       "target": [
         {
           "target": "nsis",
