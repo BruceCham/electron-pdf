@@ -33,9 +33,9 @@
       "oneClick": false,
       "allowElevation": true,
       "allowToChangeInstallationDirectory": true,
-      "installerIcon": "build/icons/icon.ico",
-      "uninstallerIcon": "build/icons/icon.ico",
-      "installerHeaderIcon": "build/icons/icon.ico",
+      "installerIcon": "build/icons/dog.ico",
+      "uninstallerIcon": "build/icons/dog.ico",
+      "installerHeaderIcon": "build/icons/dog.ico",
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": ""
@@ -44,10 +44,10 @@
       "target": [
         "dmg"
       ],
-      "icon": "build/icons/icon.icns"
+      "icon": "build/icons/dog.icns"
     },
     "win": {
-      "icon": "build/icons/icon.ico",
+      "icon": "build/icons/dog.ico",
       "target": [
         {
           "target": "nsis",
