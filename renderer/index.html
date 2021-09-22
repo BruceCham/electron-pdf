@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, viewport-fit=cover">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>PDF合成器 - BruceCham</title>
+  <link rel="stylesheet" href="../assets/lib/element-ui-2.14.0.min.css">
+  <script src="../assets/lib/vue-2.6.12.min.js"></script>
+  <script src="../assets/lib/element-ui-2.14.0.min.js"></script>
+  <style>
+    body,
+    html {
+      padding: 0;
+      margin: 0;
+    }
+
+    header {
+      width: 100%;
+      line-height: 80px;
+      text-align: center;
+      background: #409EFF;
+      color: #ffffff;
+      font-size: 20px;
+      box-shadow: 0px 2px 6px #888888;
+    }
+
+    section {
+      width: 90%;
+      max-width: 1200px;
+      margin: 10px auto;
+      border-radius: 10px;
+      box-shadow: 0px 2px 8px 0px rgb(173 180 190 / 24%);
+      transition: box-shadow 0.3s ease-out;
+      border: 1px solid #ebebeb;
+      background-color: #ffffff;
+    }
+
+    .upload-box {
+      padding: 24px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <!-- <header>智能点读笔</header> -->
+    <section>
+      <div class="upload-box">
+        <el-button style="margin-bottom: 15px;" :disabled="fileList.length === 0" type="primary" @click="open">开始合成PDF
+        </el-button>
+        <el-upload drag action="https://jsonplaceholder.typicode.com/posts/" multiple accept="application/pdf"
+          :auto-upload="false" :file-list="fileList" :before-remove="beforeRemove" :on-change="handleChange">
+          <i class="el-icon-upload"></i>
+          <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+          <div class="el-upload__tip" slot="tip">只能上传PDF文件，文件不宜过多过大</div>
+        </el-upload>
+      </div>
+    </section>
+
+  </div>
+  <script>
+    const electron = require('electron');
+    const fs = require('fs');
+    const PDFMerger = require('pdf-merger-js/browser');
+    const merger = new PDFMerger();
+    new Vue({
+      el: '#app',
+      data: function () {
+        return {
+          fileList: []
+        }
+      },
+      created: function () {
+        console.log('HelloWorld')
+      },
+      methods: {
+        handleChange(file, fileList) {
+          this.fileList = fileList.slice(-3);
+        },
+        beforeRemove(file, fileList) {
+          return this.$confirm(`确定移除 ${file.name}？`);
+        },
+        open() {
+          this.$prompt('是否需要修改合成后的文件名', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            inputValue: '合成文件' + Date.now(),
+          }).then(({ value }) => {
+            this.submitUpload(value);
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '取消输入'
+            });
+          });
+        },
+        async submitUpload(filename) {
+          const loading = this.$loading({
+            lock: true,
+            text: '合成中',
+            spinner: 'el-icon-loading',
+            background: 'rgba(0, 0, 0, 0.7)'
+          });
+          await Promise.all(this.fileList.map(async (file) => await merger.add(file.raw)));
+          try {
+            const mergedPdf = await merger.saveAsBlob();
+            const reader = new FileReader()
+            reader.onload = () => {
+              const buffer = new Buffer(reader.result)
+              fs.writeFile(filename + '.pdf', buffer, {}, (err, res) => {
+                if (err) {
+                  loading.close();
+                  this.$message.error('合成出错：' + JSON.stringify(err));
+                  return
+                }
+                loading.close();
+                this.$alert(`文件 ${filename}.pdf 合成成功`, '成功', {
+                  confirmButtonText: '确定'
+                });
+              })
+            }
+            reader.readAsArrayBuffer(mergedPdf);
+          } catch (err) {
+            loading.close();
+            this.$message.error('合成出错：' + JSON.stringify(err));
+          }
+        }
+      }
+    })
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,65 @@
+{
+  "name": "electron-pdf",
+  "productName": "PDF文件处理器",
+  "version": "1.1.0",
+  "description": "指定PDF文件进行合并操作",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:mac": "electron-builder --mac"
+  },
+  "repository": "https://github.com/brucecham/electron-pdf",
+  "keywords": [
+    "Electron",
+    "pdf",
+    "office",
+    "tool"
+  ],
+  "author": "zhanglitao",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^14.0.1"
+  },
+  "build": {
+    "appId": "com.hngline.pdf",
+    "productName": "PDF文件处理器",
+    "copyright": "BruceCham",
+    "directories": {
+      "output": "dist"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "build/icons/win32.ico",
+      "uninstallerIcon": "build/icons/win32.ico",
+      "installerHeaderIcon": "build/icons/win32.ico",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": ""
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "icon": "build/icons/icon.icns"
+    },
+    "win": {
+      "icon": "build/icons/win32.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "ia32"
+          ]
+        }
+      ]
+    }
+  },
+  "dependencies": {
+    "electron-builder": "^22.11.7",
+    "electron-updater": "^4.3.9",
+    "pdf-merger-js": "^3.2.1"
+  }
+}
