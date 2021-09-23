@@ -19,6 +19,7 @@
       margin: 0;
       box-sizing: border-box;
     }
+
     body,
     html {
       width: 100%;
@@ -27,9 +28,9 @@
 
     #app {
       padding: 25px;
-      height: 100%;
+      min-height: 100%;
     }
-  
+
     section {
       width: 100%;
       height: 100%;
@@ -45,6 +46,14 @@
     .upload-box {
       padding: 24px;
     }
+
+    .list {
+      list-style: none;
+    }
+
+    .list .drag-move {
+      transition: transform .1s;
+    }
   </style>
 </head>
 
@@ -52,14 +61,30 @@
   <div id="app">
     <section>
       <div class="upload-box">
-        <el-button style="margin-bottom: 15px;" :disabled="fileList.length === 0" type="primary" @click="submitUpload">开始合成PDF
+        <el-button style="margin-bottom: 15px;" :disabled="fileList.length === 0" type="primary" @click="submitUpload">
+          开始合成PDF
         </el-button>
-        <el-upload drag action="/" multiple accept="application/pdf"
-          :auto-upload="false" :file-list="fileList" :before-remove="beforeRemove" :on-remove="handleChange" :on-change="handleChange">
+        <el-upload drag action="/" multiple accept="application/pdf" :auto-upload="false" :show-file-list="false"
+          :file-list="fileList" :on-change="handleChange">
           <i class="el-icon-upload"></i>
           <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
           <div class="el-upload__tip" slot="tip">只能上传PDF文件，文件不宜过多过大</div>
         </el-upload>
+
+        <ul class="el-upload-list el-upload-list--text">
+          <transition-group name="drag" appear class="list" tag="ul">
+            <li @dragenter="dragenter($event, index)" @dragover="dragover($event, index)" @dragstart="dragstart(index)"
+            draggable v-for="(item, index) in fileList" :key="item.uid" class="el-upload-list__item is-success">
+              <a class="el-upload-list__item-name"><i class="el-icon-document"></i>{{item.name}}</a>
+              <label class="el-upload-list__item-status-label">
+                <i class="el-icon-upload-success el-icon-circle-check"></i>
+              </label>
+              <i class="el-icon-close" @click="handleRemove(index)"></i>
+              <i class="el-icon-close-tip">按 delete 键可删除</i>
+            </li>
+          </transition-group>
+        </ul>
+
       </div>
     </section>
 
@@ -72,7 +97,9 @@
       el: '#app',
       data: function () {
         return {
-          fileList: []
+          fileList: [],
+          dragIndex: '',
+          enterIndex: ''
         }
       },
       mounted() {
@@ -88,11 +115,26 @@
         ipcRenderer.removeListener('download-message')
       },
       methods: {
+        dragstart(index) {
+          this.dragIndex = index;
+        },
+        dragenter(e, index) {
+          e.preventDefault();
+          if (this.dragIndex !== index) {
+            const moving = this.fileList[this.dragIndex];
+            this.fileList.splice(this.dragIndex, 1);
+            this.fileList.splice(index, 0, moving);
+            this.dragIndex = index;
+          }
+        },
+        dragover(e, index) {
+          e.preventDefault();
+        },
         handleChange(file, fileList) {
           this.fileList = fileList;
         },
-        beforeRemove(file, fileList) {
-          return this.$confirm(`确定移除 ${file.name}？`);
+        handleRemove(index) {
+          this.fileList.splice(index, 1);
         },
         async submitUpload(filename) {
           const merger = new PDFMerger();
