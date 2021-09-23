@@ -12,7 +12,7 @@ function createWindow() {
       contextIsolation: false
     },
     show: false,
-    icon: './build/icons/dog.ico',
+    icon: './build/icons/pdf.ico',
     backgroundColor: "#f5f7fa",
   });
   // win.maximize()
