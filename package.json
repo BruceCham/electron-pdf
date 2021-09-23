@@ -1,6 +1,6 @@
 {
   "name": "electron-pdf",
-  "productName": "PDF文件处理器",
+  "productName": "PDF合成器",
   "version": "1.1.0",
   "description": "指定PDF文件进行合并操作",
   "main": "main.js",
@@ -24,7 +24,7 @@
   },
   "build": {
     "appId": "com.hngline.pdf",
-    "productName": "PDF文件处理器",
+    "productName": "PDF合成器",
     "copyright": "BruceCham",
     "directories": {
       "output": "dist"
