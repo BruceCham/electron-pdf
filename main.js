@@ -1,5 +1,6 @@
-const { app, BrowserWindow } = require("electron");
+const { app, BrowserWindow, Menu } = require("electron");
 const Update = require("./main/update");
+const { template, findReopenMenuItem } = require('./main/menu');
 global.Win = null;
 function createWindow() {
   // 创建浏览器窗口
@@ -32,3 +33,20 @@ function createWindow() {
 }
 
 app.on("ready", createWindow);
+
+app.on('ready', function () {
+  const menu = Menu.buildFromTemplate(template)
+  Menu.setApplicationMenu(menu)
+})
+
+app.on('browser-window-created', function () {
+  const menu = Menu.getApplicationMenu()
+  let reopenMenuItem = findReopenMenuItem(menu)
+  if (reopenMenuItem) reopenMenuItem.enabled = false
+})
+
+app.on('window-all-closed', function () {
+  const menu = Menu.getApplicationMenu()
+  let reopenMenuItem = findReopenMenuItem(menu)
+  if (reopenMenuItem) reopenMenuItem.enabled = true
+})
